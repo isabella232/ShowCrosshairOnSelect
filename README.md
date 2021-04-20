@@ -10,7 +10,7 @@ Toggle the display of measurements between intersections with the context menu o
 
 ![Crosshair options](ToggleCrosshairOptions.png "Toggling Crosshair options in the context menu")
 
-Display the crosshair coordinates (of the cursor) in the lower left corner of the active tab by choosing *Show Coordinates On Select*:
+Display the crosshair coordinates in the lower left corner of the active tab by choosing *Show Coordinates On Select*:
 
 ![Coordinates in lower left corner](ToggleCoordinates.png "Coordinates are displayed in the lower left corner of the Edit view")
 
