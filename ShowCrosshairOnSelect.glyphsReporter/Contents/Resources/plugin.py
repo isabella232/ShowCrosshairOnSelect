@@ -246,30 +246,32 @@ class ShowCrosshairOnSelect(ReporterPlugin):
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
 		toolIsToolHand = toolEventHandler.className() == "GlyphsToolHand"
 
-		selectionPosition = self.selectionPosition(Glyphs.font.selectedLayers[0])
-		
-		shouldDisplay = not any([toolIsTextTool, toolIsToolHand]) and selectionPosition != None
-
-		if Glyphs.boolDefaults["com.wwwhhhhh.ShowCrosshairOnSelect.showCoordinates"] and shouldDisplay:
-			coordinateText = "%4d, %4d" % (
-				round(selectionPosition.x), 
-				round(selectionPosition.y)
-			)
+		selectedLayers = Glyphs.font.selectedLayers
+		if selectedLayers:
+			selectionPosition = self.selectionPosition(selectedLayers[0])
 			
-			fontSize = Glyphs.defaults["com.wwwhhhhh.ShowCrosshairOnSelect.fontSize"]
-			fontAttributes = { 
-				#NSFontAttributeName: NSFont.labelFontOfSize_(10.0),
-				NSFontAttributeName: NSFont.monospacedDigitSystemFontOfSize_weight_(fontSize,0.0),
-				NSForegroundColorAttributeName: NSColor.textColor()
-			}
-			displayText = NSAttributedString.alloc().initWithString_attributes_(
-				coordinateText, 
-				fontAttributes
-			)
-			textAlignment = 0 # top left: 6, top center: 7, top right: 8, center left: 3, center center: 4, center right: 5, bottom left: 0, bottom center: 1, bottom right: 2
-			#font = layer.parent.parent
-			lowerLeftCorner = self.controller.viewPort.origin
-			displayText.drawAtPoint_alignment_(lowerLeftCorner, textAlignment)
+			shouldDisplay = not any([toolIsTextTool, toolIsToolHand]) and selectionPosition != None
+
+			if Glyphs.boolDefaults["com.wwwhhhhh.ShowCrosshairOnSelect.showCoordinates"] and shouldDisplay:
+				coordinateText = "%4d, %4d" % (
+					round(selectionPosition.x), 
+					round(selectionPosition.y)
+				)
+				
+				fontSize = Glyphs.defaults["com.wwwhhhhh.ShowCrosshairOnSelect.fontSize"]
+				fontAttributes = { 
+					#NSFontAttributeName: NSFont.labelFontOfSize_(10.0),
+					NSFontAttributeName: NSFont.monospacedDigitSystemFontOfSize_weight_(fontSize,0.0),
+					NSForegroundColorAttributeName: NSColor.textColor()
+				}
+				displayText = NSAttributedString.alloc().initWithString_attributes_(
+					coordinateText, 
+					fontAttributes
+				)
+				textAlignment = 0 # top left: 6, top center: 7, top right: 8, center left: 3, center center: 4, center right: 5, bottom left: 0, bottom center: 1, bottom right: 2
+				#font = layer.parent.parent
+				lowerLeftCorner = self.controller.viewPort.origin
+				displayText.drawAtPoint_alignment_(lowerLeftCorner, textAlignment)
 
 	@objc.python_method
 	def drawThicknessBadge(self, scale, fontSize, x, y, value):
