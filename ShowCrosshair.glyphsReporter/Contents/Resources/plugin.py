@@ -15,24 +15,19 @@ from GlyphsApp import *
 from GlyphsApp.plugins import *
 from math import radians, tan
 
-class ShowCrosshair(ReporterPlugin):
+class ShowCrosshairOnSelect(ReporterPlugin):
 
 	@objc.python_method
 	def settings(self):
 		self.menuName = Glyphs.localize({
-			'en': u'Crosshair', 
-			'de': u'Fadenkreuz',
-			'es': u'cruz',
-			'fr': u'réticule',
-			'jp': u'カーソル照準',
-			'zh': u'✨准星线',
+			'en': u'Crosshair On Select', 
 		})
 		
-		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.universalCrosshair", 1)
-		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.showCoordinates", 0)
-		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.showThickness", 0)
-		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.fontSize", 10.0)
-		Glyphs.registerDefault("com.mekkablue.ShowCrosshair.ignoreItalicAngle", 0)
+		# Glyphs.registerDefault("com.wwwhhhhh.ShowCrosshairOnSelect.universalCrosshair", 1)
+		Glyphs.registerDefault("com.wwwhhhhh.ShowCrosshairOnSelect.showCoordinates", 0)
+		Glyphs.registerDefault("com.wwwhhhhh.ShowCrosshairOnSelect.showThickness", 0)
+		Glyphs.registerDefault("com.wwwhhhhh.ShowCrosshairOnSelect.fontSize", 10.0)
+		Glyphs.registerDefault("com.wwwhhhhh.ShowCrosshairOnSelect.ignoreItalicAngle", 0)
 		
 		self.generalContextMenus = self.buildContextMenus()
 	
@@ -41,50 +36,30 @@ class ShowCrosshair(ReporterPlugin):
 		return [
 		{
 			'name': Glyphs.localize({
-				'en': u"Crosshair Options:", 
-				'de': u"Fadenkreuz-Einstellungen:", 
-				'es': u"Opciones de la cruz:", 
-				'fr': u"Options pour le réticule:",
-				'jp': u"照準プラグインオプション",
-				'zh': u"准星线选项",
+				'en': u"Crosshair On Select Options:", 
 				}), 
 			'action': None,
 		},
-		{
-			'name': Glyphs.localize({
-				'en': u"Always Show Crosshair", 
-				'de': u"Fadenkreuz immer anzeigen", 
-				'es': u"Siempre mostrar la cruz", 
-				'fr': u"Toujours afficher le réticule",
-				'jp': u"照準を常に表示",
-				'zh': u"始终显示准星线",
-				}), 
-			'action': self.toggleUniversalCrosshair,
-			'state': Glyphs.defaults["com.mekkablue.ShowCrosshair.universalCrosshair"],
-		},
+		# {
+		# 	'name': Glyphs.localize({
+		# 		'en': u"Always Show Crosshair", 
+		# 		}), 
+		# 	'action': self.toggleUniversalCrosshair,
+		# 	'state': Glyphs.defaults["com.wwwhhhhh.ShowCrosshairOnSelect.universalCrosshair"],
+		# },
 		{
 			'name': Glyphs.localize({
 				'en': u"Show Coordinates", 
-				'de': u"Koordinaten anzeigen", 
-				'es': u"Mostrar coordinados", 
-				'fr': u"Afficher les coordonnées",
-				'jp': u"マウスの座標を左下に表示",
-				'zh': u"在左下角显示坐标值",
 				}), 
 			'action': self.toggleShowCoordinates,
-			'state': Glyphs.defaults["com.mekkablue.ShowCrosshair.showCoordinates"],
+			'state': Glyphs.defaults["com.wwwhhhhh.ShowCrosshairOnSelect.showCoordinates"],
 		},
 		{
 			'name': Glyphs.localize({
 				'en': u"Show Thicknesses", 
-				'de': u"Dicken anzeigen", 
-				'es': u"Mostrar grosores", 
-				'fr': u"Afficher les épaisseurs",
-				'jp': u"縦横の太さを表示",
-				'zh': u"显示纵横坐标差",
 				}), 
 			'action': self.toggleShowThickness,
-			'state': Glyphs.defaults["com.mekkablue.ShowCrosshair.showThickness"],
+			'state': Glyphs.defaults["com.wwwhhhhh.ShowCrosshairOnSelect.showThickness"],
 		},
 		]
 	
@@ -101,15 +76,16 @@ class ShowCrosshair(ReporterPlugin):
 	@objc.python_method
 	def foreground(self, layer):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
-		toolIsDragging = toolEventHandler.dragging()
+		# toolIsDragging = toolEventHandler.dragging()
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
-		shouldDisplay = (Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.universalCrosshair"] and not toolIsTextTool) or toolIsDragging
-		
-		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.showThickness"] and shouldDisplay:
+		toolIsToolHand = toolEventHandler.className() == "GlyphsToolHand"
+		selectionPosition = self.selectionPosition(layer)
+		shouldDisplay = not any([toolIsTextTool, toolIsToolHand]) and selectionPosition != None
+
+		if Glyphs.boolDefaults["com.wwwhhhhh.ShowCrosshairOnSelect.showThickness"] and shouldDisplay:
 			font = Glyphs.font
 			master = layer.associatedFontMaster()
 			scale = self.getScale()
-			mousePosition = self.mousePosition()
 			
 			# intersection markers:
 			handleSize = self.getHandleSize() * scale**-0.7
@@ -119,7 +95,7 @@ class ShowCrosshair(ReporterPlugin):
 				NSColor.systemGrayColor().set() # pre 10.14
 
 			# stem thickness horizontal slice
-			sliceY = mousePosition.y
+			sliceY = selectionPosition.y
 			minX = -1000*(font.upm/1000.0)
 			maxX = layer.width + 1000*(font.upm/1000.0)
 			prev = minX
@@ -136,7 +112,7 @@ class ShowCrosshair(ReporterPlugin):
 				prev = inter.x
 			
 			# stem thickness vertical slice
-			sliceX = mousePosition.x
+			sliceX = selectionPosition.x
 			minY = master.descender - 1000*(font.upm/1000.0)
 			maxY = master.ascender  + 1000*(font.upm/1000.0)
 			prev = minY
@@ -164,7 +140,7 @@ class ShowCrosshair(ReporterPlugin):
 				prev = inter.y
 
 			# set font attributes
-			fontSize = Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"]
+			fontSize = Glyphs.defaults["com.wwwhhhhh.ShowCrosshairOnSelect.fontSize"]
 			thicknessFontAttributes = { 
 				NSFontAttributeName: NSFont.monospacedDigitSystemFontOfSize_weight_(fontSize/scale,0.0),
 				NSForegroundColorAttributeName: NSColor.textColor()
@@ -199,7 +175,7 @@ class ShowCrosshair(ReporterPlugin):
 		around which the italic slanting is executed, usually half x-height.
 		Usage: myPoint = italicize(myPoint,10,xHeight*0.5)
 		"""
-		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.ignoreItalicAngle"]:
+		if Glyphs.boolDefaults["com.wwwhhhhh.ShowCrosshairOnSelect.ignoreItalicAngle"]:
 			return thisPoint
 		else:
 			x = thisPoint.x
@@ -213,12 +189,14 @@ class ShowCrosshair(ReporterPlugin):
 	@objc.python_method
 	def background(self, layer):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
-		toolIsDragging = toolEventHandler.dragging()
+		# toolIsDragging = toolEventHandler.dragging()
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
-		crossHairCenter = self.mousePosition()
-		shouldDisplay = (Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.universalCrosshair"] and not toolIsTextTool) or toolIsDragging
+		toolIsToolHand = toolEventHandler.className() == "GlyphsToolHand"
+
+		crossHairCenter = self.selectionPosition(layer)
+		shouldDisplay = not any([toolIsTextTool, toolIsToolHand]) and crossHairCenter != None
 		
-		if crossHairCenter.x < NSNotFound and shouldDisplay:
+		if shouldDisplay:
 			# determine italic angle:
 			italicAngle = 0.0
 			try:
@@ -241,27 +219,44 @@ class ShowCrosshair(ReporterPlugin):
 			crosshairPath.moveToPoint_( NSPoint(-offset,crossHairCenter.y) )
 			crosshairPath.lineToPoint_( NSPoint(+offset,crossHairCenter.y) )
 
+			# set colour
+			selectionColor = 0, 0.5, 0, 0.4
+			NSColor.colorWithCalibratedRed_green_blue_alpha_( *selectionColor ).set()
+
 			# execute stroke:
 			crosshairPath.stroke()
 	
-	def mousePosition(self):
-		view = self.controller.graphicView()
-		mousePosition = view.getActiveLocation_(Glyphs.currentEvent())
-		return mousePosition
+	def selectionPosition(self, layer=None):
+		# view = self.controller.graphicView()
+		# selectionPosition = view.getActiveLocation_(Glyphs.currentEvent())
+		try:
+			selection = layer.selectionBounds
+			if selection.origin.x < 1e15 and hasattr(selection, "origin"):
+				selectionPosition_x, selectionPosition_y = selection.origin.x + selection.size.width/2, selection.origin.y + selection.size.height/2
+				selectionPosition = NSPoint(selectionPosition_x, selectionPosition_y)
+				return selectionPosition
+			else:
+				return None
+		except:
+			return None
 	
 	@objc.python_method
 	def foregroundInViewCoords(self, layer=None):
 		toolEventHandler = self.controller.view().window().windowController().toolEventHandler()
 		toolIsTextTool = toolEventHandler.className() == "GlyphsToolText"
+		toolIsToolHand = toolEventHandler.className() == "GlyphsToolHand"
 
-		if Glyphs.boolDefaults["com.mekkablue.ShowCrosshair.showCoordinates"] and not toolIsTextTool:
-			mousePosition = self.mousePosition()
+		selectionPosition = self.selectionPosition(Glyphs.font.selectedLayers[0])
+		
+		shouldDisplay = not any([toolIsTextTool, toolIsToolHand]) and selectionPosition != None
+
+		if Glyphs.boolDefaults["com.wwwhhhhh.ShowCrosshairOnSelect.showCoordinates"] and shouldDisplay:
 			coordinateText = "%4d, %4d" % (
-				round(mousePosition.x), 
-				round(mousePosition.y)
+				round(selectionPosition.x), 
+				round(selectionPosition.y)
 			)
 			
-			fontSize = Glyphs.defaults["com.mekkablue.ShowCrosshair.fontSize"]
+			fontSize = Glyphs.defaults["com.wwwhhhhh.ShowCrosshairOnSelect.fontSize"]
 			fontAttributes = { 
 				#NSFontAttributeName: NSFont.labelFontOfSize_(10.0),
 				NSFontAttributeName: NSFont.monospacedDigitSystemFontOfSize_weight_(fontSize,0.0),
@@ -310,8 +305,8 @@ class ShowCrosshair(ReporterPlugin):
 			import traceback
 			NSLog(traceback.format_exc())
 	
-	def toggleUniversalCrosshair(self):
-		self.toggleSetting("universalCrosshair")
+	# def toggleUniversalCrosshair(self):
+	# 	self.toggleSetting("universalCrosshair")
 	
 	def toggleShowCoordinates(self):
 		self.toggleSetting("showCoordinates")
@@ -321,7 +316,7 @@ class ShowCrosshair(ReporterPlugin):
 	
 	@objc.python_method
 	def toggleSetting(self, prefName):
-		pref = "com.mekkablue.ShowCrosshair.%s" % prefName
+		pref = "com.wwwhhhhh.ShowCrosshairOnSelect.%s" % prefName
 		oldSetting = Glyphs.boolDefaults[pref]
 		Glyphs.defaults[pref] = int(not oldSetting)
 		self.generalContextMenus = self.buildContextMenus()
