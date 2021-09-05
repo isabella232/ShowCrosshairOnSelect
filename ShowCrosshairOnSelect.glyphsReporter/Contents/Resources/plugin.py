@@ -299,14 +299,10 @@ class ShowCrosshairOnSelect(ReporterPlugin):
 
 	def willActivate(self):
 		Glyphs.addCallback(self.mouseDidMove_, MOUSEMOVED)
-	
+
 	def willDeactivate(self):
-		try:
-			Glyphs.removeCallback(self.mouseDidMove_, MOUSEMOVED)
-		except:
-			import traceback
-			NSLog(traceback.format_exc())
-	
+		Glyphs.removeCallback(self.mouseDidMove_, MOUSEMOVED)
+
 	# def toggleUniversalCrosshair(self):
 	# 	self.toggleSetting("universalCrosshair")
 	
