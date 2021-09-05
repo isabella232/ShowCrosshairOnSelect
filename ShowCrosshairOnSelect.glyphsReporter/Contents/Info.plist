@@ -15,7 +15,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>3.0.11</string>
 	<key>CFBundleVersion</key>
-	<string>29</string>
+	<string>30</string>
 	<key>UpdateFeedURL</key>
 	<string>https://raw.githubusercontent.com/weiweihuanghuang/ShowCrosshairOnSelect/master/ShowCrosshairOnSelect.glyphsReporter/Contents/Info.plist</string>
 	<key>productPageURL</key>
